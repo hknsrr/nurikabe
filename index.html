@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Nurikabe Puzzle</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E="
+        crossorigin="anonymous"></script>
+    <style>
+
+        body {
+            text-align: center;
+        }
+
+        #nurikabeBoard {
+            border: 3px solid black;
+            border-width: 3px 3px 4px 3px;
+            display: inline-block;
+            margin: 0 auto;
+        }
+
+        #nurikabeBoard div {
+            height: 46px;
+            font-size: 10px;
+        }
+
+        #nurikabeBoard div span {
+            display: inline-block;
+            width: 44px;
+            height: 44px;
+            border: 1px solid black;
+            border-color: rgba(0, 0, 0, .3);
+            background: rgba(100, 100, 100, .1);
+            color: rgba(0, 0, 0, .3);
+            text-align: center;
+            position: relative;
+        }
+
+        #nurikabeBoard div span:hover {
+            background: rgba(100, 100, 100, .6) !important;
+            cursor: pointer;
+        }
+
+        .empty {
+            background: rgba(100, 100, 100, .1) !important;
+        }
+
+        .white {
+            background: white !important;
+        }
+
+        .black {
+            background: black !important;
+        }
+
+        span[data-text]:before {
+            content: attr(data-text);
+            color: black;
+            font-size: 38px;
+            display: inline-block;
+            height: 35px;
+        }
+
+        .locked {
+            pointer-events: none;
+        }
+
+        input[type=button] {
+            background: gray;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            margin: 0 auto;
+            width: 200px;
+            display: block;
+            cursor: pointer;
+        }
+
+        #checkPuzzle {
+            background: gray;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            margin: 0 auto;
+            width: 200px;
+            display: block;
+            cursor: pointer;
+        }
+
+        .creatingCellInput {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            border: 0;
+            font-size: 38px;
+            text-align: center;
+        }
+
+        .matrixInput {
+            padding: 6px;
+            margin: 8px auto;
+            box-sizing: border-box;
+            font-size: 20px;
+            width: 92px;
+        }
+
+        #matrixInfo {
+            margin: 0 auto;
+            text-align: center;
+            width: 100%;
+        }
+        #rules {
+            width: 100%;
+            text-align: center;
+            font-size: 20px;
+            line-height: 30px;
+        }
+        #rules ul{
+            display: inline-block;
+            text-align: left;
+        }
+        #info{
+            color: brown;
+            font-weight: bold;
+        }
+        .hide {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="matrixInfo">
+        <input id="puzzleRow" class="matrixInput" type="text" value="5" />
+        <span>x</span>
+        <input id="puzzleColumn" class="matrixInput" type="text" value="5" />
+        <input type="button" value="Matris Oluştur" onclick="createMatrix()">
+    </div>
+    <input type="button" value="Çözmeye Hazırım!" id="readyToSolveBtn" onclick="createPuzzle()" class="hide">
+    <input type="button" value="Çözümü Kontrol Et" id="checkPuzzle" onclick="checkPuzzle()" class="hide">
+    <hr>
+    <div id="nurikabeBoard" class="hide"></div>
+    <div id="rules">
+        <p id="info" class="hide"><i>İlk tıklama ile deniz hücresi, ikinci tıklama ile ada parçası oluşturabilirsiniz. Üçüncü tıklama ile tekrar boş değer atayabilirsiniz.</i></p>
+        <ul>
+            <li>Beyaz hücreler denizi ifade eder.</li>
+            <li>Siyah hücreler ada parçasını ifade eder.</li>
+            <li>Deniz hücreleri birbirleriyle kare oluşturamaz.</li>
+            <li>Bir deniz hücresinin tüm etrafı ada parçalarından oluşamaz.</li>
+            <li>Deniz hücreleri birbirleriyle bağlantılı bir akış oluşturmalıdır.</li>
+            <li>Deniz ve ada hücrelerinin kendinden sonraki parçaları çapraz ilerlemiş olmamalıdır.</li>
+            <li>Ada numarası kendi hücresi dahil toplam kaç ada parçasından oluşacağını belirtir.</li>
+            <li>0 veya negatif ada numaraları olmamalıdır.</li>
+            <li>1 numaralı adaların 4 tarafı (yukarısı, aşağısı, sağı, solu) deniz hücresi ile çevrili olmalıdır.</li>
+            <li>Bir ada parçası başka bir adanın parçasına temas edemez.</li>
+            <li>İki farklı ada arasında bulunan hücre, deniz hücresi olmalıdır.</li>
+            <li>Her bulmacanın sadece bir çözümü vardır.</li>
+        </ul>
+    </div>
+
+    <script>
+
+        var rowCount = $('#puzzleRow').val();
+        var columnCount = $('#puzzleColumn').val();
+        var water = '#';
+        var island = '.';
+        var controlReady = false;
+        var nurikabeBoard = $('#nurikabeBoard');
+        var myArray = [];
+
+        function createMatrix() {
+            rowCount = $('#puzzleRow').val();
+            columnCount = $('#puzzleColumn').val();
+            for (var i = 0; i < rowCount; i++) { // create matrix
+                myArray[i] = [];
+                nurikabeBoard.append('<div class="row' + i + '"></div>');
+                for (var j = 0; j < columnCount; j++) {
+                    myArray[i][j] = '-';
+                    $('.row' + i).append('<span row="' + i + '" cell="' + j + '" data-text="" class="cell empty cell' + i + j + '"><input class="creatingCellInput" type="number" min="1"/></span>');
+                }
+            }
+            $('.creatingCellInput').change(function () {
+                if ($.isNumeric($(this).val()) && $(this).val()>0) {
+                    myArray[$(this).parent().attr('row')][$(this).parent().attr('cell')] = $(this).val();
+                    $(this).parent().attr('data-text', $(this).val());
+                    $('#readyToSolveBtn').removeClass('hide');
+                } else {
+                    myArray[$(this).parent().attr('row')][$(this).parent().attr('cell')] = '-';
+                    $(this).parent().attr('data-text', '');
+                }
+            });
+
+            $('#matrixInfo').addClass('hide');
+            $('#nurikabeBoard').removeClass('hide');
+        }
+
+        function createPuzzle() {
+            $('.creatingCellInput').remove();
+            $('#readyToSolveBtn').addClass('hide');
+            $('#checkPuzzle').removeClass('hide');
+            $('#info').removeClass('hide');
+
+            $('#nurikabeBoard div span').each(function () {
+                if ($(this).attr('data-text') != '') {
+                    $(this).addClass('locked').removeClass('empty');
+                }
+            })
+            $('.cell').click(function () {
+                if ($(this).hasClass('empty')) {
+                    $(this).removeClass('empty').addClass('white'); //sea
+                    myArray[$(this).attr('row')][$(this).attr('cell')] = '#';
+                } else if ($(this).hasClass('white')) {
+                    $(this).removeClass('white').addClass('black'); //island
+                    myArray[$(this).attr('row')][$(this).attr('cell')] = '.';
+                } else if ($(this).hasClass('black')) {
+                    $(this).removeClass('black').addClass('empty'); //empty
+                    myArray[$(this).attr('row')][$(this).attr('cell')] = '-';
+                }
+
+                $('#nurikabeBoard div span').each(function () { // check button disabled control
+                    if ($(this).hasClass('empty')) {
+                        $('#checkPuzzle').css('background', 'gray');
+                        controlReady = false;
+                        return false;
+                    } else {
+                        $('#checkPuzzle').css('background', 'green');
+                        controlReady = true;
+                    }
+                });
+            });
+            console.log(myArray);
+
+        }
+
+
+        // //Create Islands
+        // //**************************************//
+        // //**************************************//
+        // $('.cell20').attr('data-text', '1').addClass('locked').removeClass('empty');
+        // myArray[2][0] = 1;
+        // $('.cell22').attr('data-text', '4').addClass('locked').removeClass('empty');
+        // myArray[2][2] = 4;
+        // $('.cell24').attr('data-text', '3').addClass('locked').removeClass('empty');
+        // myArray[2][4] = 3;
+        // $('.cell40').attr('data-text', '1').addClass('locked').removeClass('empty');
+        // myArray[4][0] = 1;
+        // $('.cell44').attr('data-text', '3').addClass('locked').removeClass('empty');
+        // myArray[4][4] = 3;
+        // //**************************************//
+        // //**************************************//
+
+        function checkPuzzle() {
+            if (!controlReady)
+                alert('Tüm hücrelerin dolu olması gerekiyor!');
+            else if (verify(myArray))
+                alert('***DOĞRU ÇÖZÜM***');
+            else
+                alert('Yanlış çözüm...');
+        }
+
+        function verify(puzzle) {
+            var r = puzzle.length;
+            var islandCount = 0;
+            var landCount = 0;
+
+            for (var i = 0; i < r; i++) { // check island count
+                for (var j = 0; j < r; j++) {
+                    if (!isNaN(puzzle[i][j])) {
+                        islandCount += parseInt(puzzle[i][j]);
+                    }
+                }
+            }
+            for (var i = 0; i < r; i++) {
+                for (var j = 0; j < r; j++) {
+                    var ch = puzzle[i][j];
+                    if (ch == '#') {
+                        if (isWaterSquare(puzzle, i, j)) {
+                            return false;
+                        }
+                        if (!isWaterContinuity(puzzle, i, j)) {
+                            return false;
+                        }
+                    }
+                    else if (ch == '.') {
+                        if (!isLandContinuity(puzzle, i, j)) {
+                            return false;
+                        } else {
+                            landCount++;
+                        }
+                    } else {
+                        landCount++;
+                        if (parseInt(ch) == 1 && !checkSingleLand(puzzle, i, j)) { // can not be a part of the island beside single islands -> example:1
+                            return false;
+                        } else if (!isNaN(puzzle[i][j])) { // if it is island number
+                            if (!checkSideTheIsland(puzzle, i, j)) // Is there another island beside it?
+                                return false;
+                        }
+                    }
+                }
+            }
+
+            if (islandCount != landCount)
+                return false;
+            else
+                return true; // Everything is good...
+        }
+
+        function isWaterContinuity(puzzle, i, j) {
+
+            var count = 0;
+
+            if (i != 0 && puzzle[i - 1][j] != water) count++; //look top
+            if (j != 0 && puzzle[i][j - 1] != water) count++; //look left
+            if (i != puzzle.length - 1 && puzzle[i + 1][j] != water) count++; //look bottom
+            if (j != puzzle.length - 1 && puzzle[i][j + 1] != water) count++; //look right
+
+            return checkContinuity(puzzle, i, j, count);
+
+        }
+
+        function isLandContinuity(puzzle, i, j) {
+
+            var count = 0;
+
+            if (i != 0 && puzzle[i - 1][j] == water) count++; //look top
+            if (j != 0 && puzzle[i][j - 1] == water) count++; //look left
+            if (i != puzzle.length - 1 && puzzle[i + 1][j] == water) count++; //look bottom
+            if (j != puzzle.length - 1 && puzzle[i][j + 1] == water) count++; //look right
+
+            return checkContinuity(puzzle, i, j, count);
+        }
+
+        function checkContinuity(puzzle, i, j, count) {
+
+            var ln = puzzle.length;
+            if ((i == 0 || i == ln - 1) && (j == 0 || j == ln - 1) && count == 2) return false; // check corners, all roads closed?
+            if ((i == 0 || i == ln - 1) && count == 3) return false; // check middle places on top or bottom corridor, all roads closed?
+            if ((j == 0 || j == ln - 1) && count == 3) return false; // check middle places on left or right corridor, all roads closed?
+
+            if (count == 4) // all roads closed...
+                return false;
+            else
+                return true; // No problem
+        }
+
+        function checkSingleLand(puzzle, i, j) {
+
+            if (i != 0 && puzzle[i - 1][j] == island) return false; //look top
+            else if (j != 0 && puzzle[i][j - 1] == island) return false; //look left
+            else if (i != puzzle.length - 1 && puzzle[i + 1][j] == island) return false; //look bottom
+            else if (j != puzzle.length - 1 && puzzle[i][j + 1] == island) return false; //look right
+            else return true;
+        }
+
+        function checkSideTheIsland(puzzle, i, j) { // Is there another island beside it?
+
+            if (i >= 2 && !isNaN(puzzle[i - 2][j])) { //look top
+                if (puzzle[i - 1][j] != water)
+                    return false;
+            }
+            if (j >= 2 && !isNaN(puzzle[i][j - 2])) { //look left
+                if (puzzle[i][j - 1] != water)
+                    return false;
+            }
+            if (i < puzzle.length - 2 && !isNaN(puzzle[i + 2][j])) { //look bottom
+                if (puzzle[i + 1][j] != water)
+                    return false;
+            }
+            if (j < puzzle.length - 2 && !isNaN(puzzle[i][j + 2])) { //look right
+                if (puzzle[i][j + 1] != water)
+                    return false;
+            }
+            return true;
+        }
+
+        function isWaterSquare(puzzle, i, j) { // water pieces have formed a square???
+            var ln = puzzle.length;
+            if (i + 1 != ln && j + 1 != ln) {
+                if (puzzle[i][j] == water && puzzle[i + 1][j] == water && puzzle[i][j + 1] == water && puzzle[i + 1][j + 1] == water) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+    </script>
+</body>
+
+</html>
