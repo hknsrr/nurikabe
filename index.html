@@ -146,9 +146,9 @@
 
 <body>
     <div id="matrixInfo">
-        <input id="puzzleRow" class="matrixInput" type="text" value="5" />
+        <input id="puzzleRow" class="matrixInput" type="number" value="5" min="1"/>
         <span>x</span>
-        <input id="puzzleColumn" class="matrixInput" type="text" value="5" />
+        <input id="puzzleColumn" class="matrixInput" type="number" value="5" min="1"/>
         <input type="button" value="Matris Oluştur" onclick="createMatrix()">
     </div>
     <input type="button" value="Çözmeye Hazırım!" id="readyToSolveBtn" onclick="createPuzzle()" class="hide">
