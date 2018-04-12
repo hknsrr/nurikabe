@@ -248,8 +248,8 @@
                 });
             });
 
-            for (var i = 0; i < myArray.length; i++) { // check island count
-                for (var j = 0; j < myArray.length; j++) {
+            for (var i = 0; i < rowCount; i++) { // check island count
+                for (var j = 0; j < columnCount; j++) {
                     if (!isNaN(myArray[i][j])) {
                         islandCount += parseInt(myArray[i][j]);
                     }
@@ -270,8 +270,8 @@
         function verify(puzzle) {
             var landCount = 0;
 
-            for (var i = 0; i < puzzle.length; i++) {
-                for (var j = 0; j < puzzle.length; j++) {
+            for (var i = 0; i < rowCount; i++) {
+                for (var j = 0; j < columnCount; j++) {
                     var ch = puzzle[i][j];
                     if (ch == '#') {
                         if (isWaterSquare(puzzle, i, j)) {
@@ -308,11 +308,11 @@
         function isWaterContinuity(puzzle, i, j) {
 
             var count = 0;
-
+            
             if (i != 0 && puzzle[i - 1][j] != water) count++; //look top
             if (j != 0 && puzzle[i][j - 1] != water) count++; //look left
-            if (i != puzzle.length - 1 && puzzle[i + 1][j] != water) count++; //look bottom
-            if (j != puzzle.length - 1 && puzzle[i][j + 1] != water) count++; //look right
+            if (i != rowCount - 1 && puzzle[i + 1][j] != water) count++; //look bottom
+            if (j != columnCount -1 && puzzle[i][j + 1] != water) count++; //look right
 
             return checkContinuity(puzzle, i, j, count);
 
@@ -324,18 +324,17 @@
 
             if (i != 0 && puzzle[i - 1][j] == water) count++; //look top
             if (j != 0 && puzzle[i][j - 1] == water) count++; //look left
-            if (i != puzzle.length - 1 && puzzle[i + 1][j] == water) count++; //look bottom
-            if (j != puzzle.length - 1 && puzzle[i][j + 1] == water) count++; //look right
+            if (i != rowCount - 1 && puzzle[i + 1][j] == water) count++; //look bottom
+            if (j != columnCount -1 && puzzle[i][j + 1] == water) count++; //look right
 
             return checkContinuity(puzzle, i, j, count);
         }
 
         function checkContinuity(puzzle, i, j, count) {
 
-            var ln = puzzle.length;
-            if ((i == 0 || i == ln - 1) && (j == 0 || j == ln - 1) && count == 2) return false; // check corners, all roads closed?
-            if ((i == 0 || i == ln - 1) && count == 3) return false; // check middle places on top or bottom corridor, all roads closed?
-            if ((j == 0 || j == ln - 1) && count == 3) return false; // check middle places on left or right corridor, all roads closed?
+            if ((i == 0 || i == rowCount - 1) && (j == 0 || j == columnCount -1) && count == 2) return false; // check corners, all roads closed?
+            if ((i == 0 || i == rowCount - 1) && count == 3) return false; // check middle places on top or bottom corridor, all roads closed?
+            if ((j == 0 || j == columnCount -1) && count == 3) return false; // check middle places on left or right corridor, all roads closed?
 
             if (count == 4) // all roads closed...
                 return false;
@@ -347,8 +346,8 @@
 
             if (i != 0 && puzzle[i - 1][j] == island) return false; //look top
             else if (j != 0 && puzzle[i][j - 1] == island) return false; //look left
-            else if (i != puzzle.length - 1 && puzzle[i + 1][j] == island) return false; //look bottom
-            else if (j != puzzle.length - 1 && puzzle[i][j + 1] == island) return false; //look right
+            else if (i != rowCount - 1 && puzzle[i + 1][j] == island) return false; //look bottom
+            else if (j != columnCount -1 && puzzle[i][j + 1] == island) return false; //look right
             else return true;
         }
 
@@ -362,11 +361,11 @@
                 if (puzzle[i][j - 1] != water)
                     return false;
             }
-            if (i < puzzle.length - 2 && !isNaN(puzzle[i + 2][j])) { //look bottom
+            if (i < rowCount - 2 && !isNaN(puzzle[i + 2][j])) { //look bottom
                 if (puzzle[i + 1][j] != water)
                     return false;
             }
-            if (j < puzzle.length - 2 && !isNaN(puzzle[i][j + 2])) { //look right
+            if (j < columnCount - 2 && !isNaN(puzzle[i][j + 2])) { //look right
                 if (puzzle[i][j + 1] != water)
                     return false;
             }
@@ -374,8 +373,8 @@
         }
 
         function isWaterSquare(puzzle, i, j) { // water pieces have formed a square???
-            var ln = puzzle.length;
-            if (i + 1 != ln && j + 1 != ln) {
+
+            if (i + 1 != rowCount && j + 1 != columnCount) {
                 if (puzzle[i][j] == water && puzzle[i + 1][j] == water && puzzle[i][j + 1] == water && puzzle[i + 1][j + 1] == water) {
                     return true;
                 }
