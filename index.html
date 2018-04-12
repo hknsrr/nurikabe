@@ -374,7 +374,7 @@
 
         function isWaterSquare(puzzle, i, j) { // water pieces have formed a square???
 
-            if (i + 1 != rowCount && j + 1 != columnCount) {
+            if (i != rowCount - 1 && j != columnCount - 1) {
                 if (puzzle[i][j] == water && puzzle[i + 1][j] == water && puzzle[i][j + 1] == water && puzzle[i + 1][j + 1] == water) {
                     return true;
                 }
