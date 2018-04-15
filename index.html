@@ -250,9 +250,8 @@
 
             for (var i = 0; i < rowCount; i++) { // check island count
                 for (var j = 0; j < columnCount; j++) {
-                    if (!isNaN(myArray[i][j])) {
+                    if (!isNaN(myArray[i][j]))
                         islandCount += parseInt(myArray[i][j]);
-                    }
                 }
             }
             console.log(myArray);
@@ -274,25 +273,24 @@
                 for (var j = 0; j < columnCount; j++) {
                     var ch = puzzle[i][j];
                     if (ch == '#') {
-                        if (isWaterSquare(puzzle, i, j)) {
+                        if (isWaterSquare(puzzle, i, j))
                             return false;
-                        }
-                        if (!isWaterContinuity(puzzle, i, j)) {
+                        if (!isWaterContinuity(puzzle, i, j))
                             return false;
-                        }
                     }
                     else if (ch == '.') {
-                        if (!isLandContinuity(puzzle, i, j)) {
+                        if (!isLandContinuity(puzzle, i, j))
                             return false;
-                        } else {
+                        else
                             landCount++;
-                        }
                     } else {
                         landCount++;
-                        if (parseInt(ch) == 1 && !checkSingleLand(puzzle, i, j)) { // can not be a part of the island beside single islands -> example:1
+                        if (parseInt(ch) == 1 && !checkSingleLand(puzzle, i, j)) // can not be a part of the island beside single islands -> example:1
                             return false;
-                        } else if (!isNaN(puzzle[i][j])) { // if it is island number
+                        else if (!isNaN(puzzle[i][j])) { // if it is island number
                             if (!checkSideTheIsland(puzzle, i, j)) // Is there another island beside it?
+                                return false;
+                            if (parseInt(ch) > 1 && !isLandContinuity(puzzle, i, j)) // Is there water on the big islands? ex: more than 1
                                 return false;
                         }
                     }
@@ -308,11 +306,11 @@
         function isWaterContinuity(puzzle, i, j) {
 
             var count = 0;
-            
+
             if (i != 0 && puzzle[i - 1][j] != water) count++; //look top
             if (j != 0 && puzzle[i][j - 1] != water) count++; //look left
             if (i != rowCount - 1 && puzzle[i + 1][j] != water) count++; //look bottom
-            if (j != columnCount -1 && puzzle[i][j + 1] != water) count++; //look right
+            if (j != columnCount - 1 && puzzle[i][j + 1] != water) count++; //look right
 
             return checkContinuity(puzzle, i, j, count);
 
@@ -325,16 +323,16 @@
             if (i != 0 && puzzle[i - 1][j] == water) count++; //look top
             if (j != 0 && puzzle[i][j - 1] == water) count++; //look left
             if (i != rowCount - 1 && puzzle[i + 1][j] == water) count++; //look bottom
-            if (j != columnCount -1 && puzzle[i][j + 1] == water) count++; //look right
+            if (j != columnCount - 1 && puzzle[i][j + 1] == water) count++; //look right
 
             return checkContinuity(puzzle, i, j, count);
         }
 
         function checkContinuity(puzzle, i, j, count) {
 
-            if ((i == 0 || i == rowCount - 1) && (j == 0 || j == columnCount -1) && count == 2) return false; // check corners, all roads closed?
+            if ((i == 0 || i == rowCount - 1) && (j == 0 || j == columnCount - 1) && count == 2) return false; // check corners, all roads closed?
             if ((i == 0 || i == rowCount - 1) && count == 3) return false; // check middle places on top or bottom corridor, all roads closed?
-            if ((j == 0 || j == columnCount -1) && count == 3) return false; // check middle places on left or right corridor, all roads closed?
+            if ((j == 0 || j == columnCount - 1) && count == 3) return false; // check middle places on left or right corridor, all roads closed?
 
             if (count == 4) // all roads closed...
                 return false;
@@ -347,7 +345,7 @@
             if (i != 0 && puzzle[i - 1][j] == island) return false; //look top
             else if (j != 0 && puzzle[i][j - 1] == island) return false; //look left
             else if (i != rowCount - 1 && puzzle[i + 1][j] == island) return false; //look bottom
-            else if (j != columnCount -1 && puzzle[i][j + 1] == island) return false; //look right
+            else if (j != columnCount - 1 && puzzle[i][j + 1] == island) return false; //look right
             else return true;
         }
 
